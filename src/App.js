@@ -19,16 +19,18 @@ export default function App() {
     api.get('repositories').then(response => {
       setRepositories(response.data);
     })
-  });
+  },[]);
 
 
   async function handleLikeRepository(id) {
-    api.post(`repositories/${id}/like`).then(response => {
-      const repositoriesTemp = repositories;
-      const IndexRepository = repositoriesTemp.findIndex(repository => repository.id === id);
-      repositoriesTemp[IndexRepository] = response.data;
-      setRepositories(repositoriesTemp);
+    const response = await api.post(`repositories/${id}/like`)
+
+    const repositoryTemp = response.data
+    const repositoryUpdate = repositories.map(repository => {
+      if (repository.id === id) return repositoryTemp
+      else return repository
     })
+    setRepositories(repositoryUpdate)
   }
 
   return (
@@ -40,12 +42,11 @@ export default function App() {
           keyExtractor={repository => repository.id}
           renderItem={({ item: repository }) => (
             <View style={styles.repositoryContainer}>
-              <Text style={styles.repository}>{repository.title}</Text>
-              
+              <Text key={repository.id} style={styles.repository}>{repository.title}</Text>
               <View style={styles.techsContainer}>
-                {repository.techs.map((tech,index) => (
-                  <Text key={index} style={styles.tech}> {tech} </Text>))
-                }
+                {repository.techs.map((tech, index) => (
+                  <Text key={index} style={styles.tech}> {tech} </Text>
+                ))} 
               </View>
 
               <View style={styles.likesContainer}>
@@ -57,7 +58,7 @@ export default function App() {
                </Text>
               </View>
 
-              <TouchableOpacity
+              <TouchableOpacity 
                 style={styles.button}
                 onPress={() => handleLikeRepository(repository.id)}
                 testID={`like-button-${repository.id}`}
@@ -76,6 +77,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#7159c1",
+    borderRadius:5
   },
   repositoryContainer: {
     marginBottom: 15,
